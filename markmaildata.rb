@@ -36,13 +36,37 @@ File.foreach(filename) do |line|
     urls[name] = search_url
 end
 
+file = File.open("dataset.csv", "w")
+
+dataset = Hash.new
+searches = []
 urls.each do |name, search_url|
+    searches.push name
+    search = searches.index name
     url = base_url + search_url
-    file = File.open(name + ".txt", "w")
     doc = Nokogiri::HTML(open url)
+    serie = Hash.new
+    puts "Serie: #{name}"
     doc.xpath('//tr/td[@align = "right"]').collect do |row|
-        file.puts "\"#{row.previous_element.text}\", \"#{row.text}\""
+        serie[row.previous_element.text] = row.text
     end
-    file.close
+    serie.each do |list, count|
+        if dataset.has_key? list
+            dataset[list][search] = count
+        else
+            dataset[list] = ["0", "0", "0"]
+            dataset[list][search] = count
+        end
+    end
+    dataset.each_key do |list|
+        dataset[list][search] = "0" if not serie.has_key? list
+    end
 end
+
+
+file.puts "Lists," + searches.join(",")
+dataset.each do |list, counts|
+    file.puts list + "," + counts.join(",")
+end
+file.close
 

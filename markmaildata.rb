@@ -23,11 +23,26 @@ require 'open-uri'
 require 'nokogiri'
 
 base_url = "http://markmail.org/browse/?q="
-search_url = "from:emergya%20-type:checkins%20date:2010"
-url = base_url + search_url
+if File.file? ARGV[0]
+    filename = ARGV[0]
+else
+    puts "ERROR: A file path must be passed as argument"
+    exit
+end
 
-doc = Nokogiri::HTML(open url)
-doc.xpath('//tr/td[@align = "right"]').collect do |row|
-  puts "\"#{row.previous_element.text}\", \"#{row.text}\""
+urls = Hash.new
+File.foreach(filename) do |line|
+    name, search_url = line.split(";")
+    urls[name] = search_url
+end
+
+urls.each do |name, search_url|
+    url = base_url + search_url
+    file = File.open(name + ".txt", "w")
+    doc = Nokogiri::HTML(open url)
+    doc.xpath('//tr/td[@align = "right"]').collect do |row|
+        file.puts "\"#{row.previous_element.text}\", \"#{row.text}\""
+    end
+    file.close
 end
 

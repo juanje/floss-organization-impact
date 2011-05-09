@@ -12,6 +12,7 @@
 # the full text of the license.
 
 root_dir=$PWD
+years=(2009 2010 2011)
 export IFS=$'\x0A'$'\x0D'
 
 if [ -d "$1" ]; then
@@ -37,9 +38,12 @@ for project in ${projects[@]}; do
     cd ${root_dir}/${project}
     declare -a authors
     get_authors
-    for author in "${authors[@]}"; do
-        commits=$(git log --oneline --author="${author}" --since="2010-01-01" --until="2010-12-31" | wc -l)
-        echo "${project};${author};${commits}"
+    for year in ${years[@]}; do
+        for author in ${authors[@]}; do
+            commits=$(git log --oneline --author="${author}" \
+                      --since="${year}-01-01" --until="${year}-12-31" | wc -l)
+            echo "${year};${project};${author};${commits}"
+        done
     done
 done
     

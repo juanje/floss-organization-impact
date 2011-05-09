@@ -23,7 +23,6 @@ get_authors()
     authors=( $(git log --pretty=format:%aN | sort -u) )
 }
 
-
 get_projects()
 {
     for dir in $(find $root_dir -maxdepth 1 -type d ); do
@@ -34,7 +33,7 @@ get_projects()
 }
 
 projects=( $(get_projects) )
-for project in "${projects[@]}"; do
+for project in ${projects[@]}; do
     cd ${root_dir}/${project}
     declare -a authors
     get_authors

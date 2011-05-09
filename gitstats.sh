@@ -28,7 +28,7 @@ get_projects()
 {
     for dir in $(find $root_dir -maxdepth 1 -type d ); do
         if [ -d $dir/.git ]; then
-            echo ${dir#*/}
+            echo ${dir##*/}
         fi
     done
 }

@@ -22,8 +22,12 @@
 root_dir = Dir.pwd
 years = %w{2009 2010 2011}
 
+if File.directory?(ARGV[0])
+    root_dir = ARGV[0]
+end
+
 projects = []
-Dir.foreach(".") do |dir|
+Dir.foreach(root_dir) do |dir|
     if not dir.start_with?(".")
         projects.push(dir) if File.directory?(dir + "/.git")
     end

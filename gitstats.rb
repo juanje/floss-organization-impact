@@ -22,8 +22,8 @@
 root_dir = Dir.pwd
 years = %w{2009 2010 2011}
 
-if File.directory?(ARGV[0])
-    root_dir = ARGV[0]
+if ARGV.length > 0
+    root_dir = ARGV[0] if File.directory?(ARGV[0])
 end
 
 projects = []

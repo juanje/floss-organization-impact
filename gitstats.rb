@@ -34,14 +34,19 @@ Dir.foreach(root_dir) do |dir|
 end
 
 projects.each do |project|
-    Dir.chdir File.join(root_dir, project)
+    dirname = File.join(root_dir, project)
+    Dir.chdir dirname
+    filename = File.join(root_dir, project + ".csv")
+    file = File.open(filename, "w")
+    file.puts "Year;Author;Commits"
     authors = `git log --pretty=format:%aN`.split("\n").uniq
     years.each do |year|
         authors.each do |author|
             commits = `git log --oneline --author="#{author}" \
                        --since="#{year}-01-01" --until="#{year}-12-31"`
             commits = commits.split("\n").count
-            puts "#{year};#{project};#{author};#{commits}"
+            file.puts "#{year};#{author};#{commits}"
         end
     end
+    file.close
 end

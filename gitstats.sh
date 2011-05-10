@@ -19,11 +19,6 @@ if [ -d "$1" ]; then
     root_dir="$1"
 fi
 
-get_authors()
-{
-    authors=( $(git log --pretty=format:%aN | sort -u) )
-}
-
 get_projects()
 {
     for dir in $(find $root_dir -maxdepth 1 -type d ); do
@@ -36,8 +31,7 @@ get_projects()
 projects=( $(get_projects) )
 for project in ${projects[@]}; do
     cd ${root_dir}/${project}
-    declare -a authors
-    get_authors
+    authors=( $(git log --pretty=format:%aN | sort -u) )
     for year in ${years[@]}; do
         for author in ${authors[@]}; do
             commits=$(git log --oneline --author="${author}" \

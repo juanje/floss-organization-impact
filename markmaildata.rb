@@ -23,7 +23,7 @@ require 'open-uri'
 require 'nokogiri'
 
 base_url = "http://markmail.org/browse/?q="
-if File.file? ARGV[0]
+if ARGV.length > 0 and File.file? ARGV[0]
     filename = ARGV[0]
 else
     puts "ERROR: A file path must be passed as argument"

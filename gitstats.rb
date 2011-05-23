@@ -29,7 +29,7 @@ end
 projects = []
 Dir.foreach(root_dir) do |dir|
     if not dir.start_with?(".")
-        projects.push(dir) if File.directory?(dir + "/.git")
+        projects.push(dir) if File.directory?(root_dir + dir + "/.git")
     end
 end
 

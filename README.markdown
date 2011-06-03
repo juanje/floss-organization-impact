@@ -6,7 +6,7 @@
 
 ## Why we do it?
 
-Because we (our company, [[Emergya|http://www.emergya.es]]) need a way to mesure the effort and how much we really are into the FLOSS communities to keep improving and calculate de ROI.
+Because we (our company, [Emergya](http://www.emergya.es)) need a way to mesure the effort and how much we really are into the FLOSS communities to keep improving and calculate de ROI.
 
 ## Is this Libre/Open Source?
 

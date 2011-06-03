@@ -26,8 +26,11 @@
 # org.gnome.orca-list,78,0,12
 contents <- read.csv('dataset.csv', header = T)
 
+# Little hack to get sorted the colums
+contents <- contents[,order(colnames(contents))]
+
 # Graphs
-barplot(as.matrix(contents[c(2,3,4)]),
+barplot(as.matrix(contents[c(1,2,3)]),
     col=rainbow(20),
     xlab='Año',
     ylab='Número de correos',

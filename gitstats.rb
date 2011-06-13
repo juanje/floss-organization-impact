@@ -20,7 +20,6 @@
 # Authors:: Juanje Ojeda (mailto:jojeda@emergya.es)
 
 root_dir = Dir.pwd
-years = %w{2009 2010 2011}
 
 if ARGV.length > 0
     root_dir = ARGV[0] if File.directory?(ARGV[0])
@@ -33,20 +32,17 @@ Dir.foreach(root_dir) do |dir|
     end
 end
 
+file = File.open("git-dataset.csv", "w")
+file.puts "Project,Date,Author"
+
 projects.each do |project|
     dirname = File.join(root_dir, project)
     Dir.chdir dirname
-    filename = File.join(root_dir, project + ".csv")
-    file = File.open(filename, "w")
-    file.puts "Year,Author,Commits"
-    authors = `git log --pretty=format:%aN`.split("\n").uniq
-    years.each do |year|
-        authors.each do |author|
-            commits = `git log --oneline --author="#{author}" \
-                       --since="#{year}-01-01" --until="#{year}-12-31"`
-            commits = commits.split("\n").count
-            file.puts "#{year},\"#{author}\",#{commits}"
-        end
+    authors_data = `git log --pretty=format:%aE\\|%aN\\|%aD`.split("\n").uniq
+    authors_data.each do |data|
+        email, name, date = data.split("|")
+        file.puts "#{project},\"#{date}\",\"#{name}\""
     end
-    file.close
 end
+
+file.close

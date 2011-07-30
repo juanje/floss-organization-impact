@@ -23,22 +23,89 @@ require 'open-uri'
 require 'json'
 require 'mash'
 
-BASE_URL = "http://github.com/api/v2/json"
-ORGANIZATION = "Emergya"
+class Organization < Mash
+  BASE_URL = "http://github.com/api/v2/json"
+  attr_reader :name
 
-# Fetches the public_members for a given organization.
-def members(org)
-  url = BASE_URL + "/organizations/#{ORGANIZATION}/public_members"
-  JSON.parse(open(url).read)["users"].collect do |user|
-    User.new(user)
+  def initialize(org)
+    if org.class == String
+      @name = org
+      url = BASE_URL + "/organizations/#{@name}"
+      org_hash = JSON.parse(open(url).read)["organization"]
+      Organization.new(org_hash)
+    else
+      @name = org["name"]
+    end
   end
-end
 
-# Fetches the public_repository for a given organization.
-def repositories(org)
-  url = BASE_URL + "/organizations/#{ORGANIZATION}/public_repositories"
-  JSON.parse(open(url).read)["repositories"].collect do |repo|
-    Repository.new(repo)
+  # Fetches the public_members for a given organization.
+  def members
+    url = BASE_URL + "/organizations/#{@name}/public_members"
+    JSON.parse(open(url).read)["users"].collect do |user|
+      User.new(user)
+    end
+  end
+
+  # Fetches the public_repository for a given organization.
+  def repositories
+    url = BASE_URL + "/organizations/#{@name}/public_repositories"
+    JSON.parse(open(url).read)["repositories"].collect do |repo|
+      Repository.new(repo)
+    end
+  end
+
+  # Fetches the commits for a given repository.
+  def self.commits(user,repository,branch="master")
+    url = BASE_URL + "/commits/list/#{user}/#{repository}/#{branch}"
+    begin
+      opened_url = open(url)
+    rescue
+      Hash.new Commit.new(:user => user,
+                          :repository => repository,
+                          :id => 0,
+                          :authored_date => "0000-01-01")
+    else
+      JSON.parse(opened_url.read)["commits"].collect{ |c|
+        Commit.new(c.merge(:user => user, :repository => repository))
+      }
+    end
+  end
+
+  def self.user_repositories(user)
+    # Fetches the repositories for a given user.
+    url = BASE_URL + "/repos/show/#{user}"
+    JSON.parse(open(url).read)["repositories"].collect{ |r|
+      Repository.new(r.merge(:user => user))
+    }
+  end
+
+  def commits_per_year(year)
+    total_commits = 0
+    members.each do |member|
+      user = member.login
+      own_commits = 0
+      org_commits = 0
+      puts "\nUser: #{user}"
+      Organization.user_repositories(user).each do |repository|
+        break if not repository
+        repo = repository.name
+        num_commits = Organization.commits(user, repo).collect { |commit|
+          commit_year = Date.parse(commit.authored_date).strftime("%Y").to_i
+          commit.id if commit_year == year
+        }.compact.count
+        if repository.own == @name
+          puts "\t#{@name}'s repo: #{repo}\tNum. Commits: #{num_commits}"
+          org_commits += num_commits
+        else
+          puts "\tOwn repo: #{repo}\tNum. Commits: #{num_commits}"
+          own_commits += num_commits
+        end
+      end
+      puts "\n\tTotal commits on #{user}'s repos: #{own_commits}\n"
+      puts "\tTotal commits on #{@name}'s repos: #{org_commits}\n"
+      total_commits = total_commits + own_commits + org_commits
+    end
+    puts "\n\nTotal commits from #{@name} users:\t#{total_commits}"
   end
 end
 
@@ -48,13 +115,33 @@ end
 class Repository < Mash
 end
 
-puts "#{ORGANIZATION}'s Users:"
-members('Emergya').each do |user|
-    puts "User: #{user.login}\n\tRepos: #{user.public_repo_count}"
+class Commit < Mash
+  def detailed
+    url = BASE_URL + "/commits/show/#{@user}/#{@repository}/#{id}"
+    commit = JSON.parse(open(url).read)["commit"]
+    Commit.new(commit.merge(:user => @user, :repository => @repository))
+  end
+
 end
 
-puts "\n\n#{ORGANIZATION}'s repositories"
-repositories('Emergya').each do |repo|
-    puts "Repo: #{repo.name}\n\tDescription: #{repo.description}"
+if ARGV.length > 0
+  organization = ARGV[0]
+else
+  puts "ERROR: You need to pass a Organization name as a parameter"
+  exit
 end
 
+org = Organization.new(organization)
+
+puts "#{org.name}'s Users:"
+org.members.each do |user|
+  puts "User: #{user.login}\tRepos: #{user.public_repo_count}"
+end
+
+puts "\n\n#{org.name}'s repositories"
+org.repositories.each do |repo|
+  puts "Repo: #{repo.name}\n\tDescription: #{repo.description}"
+end
+
+puts "\n\nCommits from #{org.name}'s members at 2011"
+org.commits_per_year(2011)

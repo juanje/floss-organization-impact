@@ -42,8 +42,14 @@ class Organization < Mash
   # Fetches the public_members for a given organization.
   def members
     url = BASE_URL + "/organizations/#{@name}/public_members"
-    JSON.parse(open(url).read)["users"].collect do |user|
-      User.new(user)
+    begin
+      opened_url = open(url)
+    rescue
+      []
+    else
+      JSON.parse(open(url).read)["users"].collect do |user|
+        User.new(user)
+      end
     end
   end
 
@@ -75,9 +81,15 @@ class Organization < Mash
   def self.user_repositories(user)
     # Fetches the repositories for a given user.
     url = BASE_URL + "/repos/show/#{user}"
-    JSON.parse(open(url).read)["repositories"].collect{ |r|
-      Repository.new(r.merge(:user => user))
-    }
+    begin
+      opened_url = open(url)
+    rescue
+      []
+    else
+      JSON.parse(open(url).read)["repositories"].collect{ |r|
+        Repository.new(r.merge(:user => user))
+      }
+    end
   end
 
   def commits_per_year(year)

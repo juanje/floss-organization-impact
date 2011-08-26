@@ -22,6 +22,7 @@
 require 'open-uri'
 require 'json'
 require 'mash'
+require 'date'
 
 class Organization < Mash
   BASE_URL = "http://github.com/api/v2/json"

@@ -34,6 +34,31 @@ users_links = doc.xpath('//div[@class = "name"]/a').collect do |row|
   link = row.attribute('href').value 
 end
 
+def get_issues user
+  url = "http://drupal.org/project/issues/user/#{user}/feed"
+  doc = Nokogiri::XML(open url)
+
+  issues = doc.xpath('//item').collect do |node|
+    {
+      :title => node.xpath("./title").text,
+      :date  => node.xpath("./pubDate").text
+    }
+  end
+end
+
+def get_projects user
+  url = "http://drupal.org/project/user/#{user}/feed"
+  doc = Nokogiri::XML(open url)
+
+  #FIXME: get right the XML elements
+  issues = doc.xpath('//item').collect do |node|
+    {
+      :title => node.xpath("./title").text,
+      :date  => node.xpath("./pubDate").text
+    }
+  end
+end
+
 users_links.each do |user_link|
   url = base_url + user_link
   doc = Nokogiri::HTML(open url)

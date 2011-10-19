@@ -25,24 +25,21 @@ if ARGV.length > 0
     root_dir = ARGV[0] if File.directory?(ARGV[0])
 end
 
-projects = []
-Dir.foreach(root_dir) do |dir|
-    if not dir.start_with?(".")
-        projects.push(dir) if File.directory?(root_dir + dir + "/.git")
-    end
+projects = Dir.foreach(root_dir).collect { |dir|
+    next if dir.start_with?(".")
+    dir if File.directory? File.join(root_dir, dir, "/.git")
+}.compact
+
+File.open("git-dataset.csv", "w") do |file|
+  file << "Project,Date,Author\n"
+
+  projects.each do |project|
+      dirname = File.join(root_dir, project)
+      Dir.chdir dirname
+      authors_data = `git log --pretty=format:%aE\\|%aN\\|%aD`.split("\n").uniq
+      authors_data.each do |data|
+          email, name, date = data.split("|")
+          file << "#{project},\"#{date}\",\"#{name}\"\n"
+      end
+  end
 end
-
-file = File.open("git-dataset.csv", "w")
-file.puts "Project,Date,Author"
-
-projects.each do |project|
-    dirname = File.join(root_dir, project)
-    Dir.chdir dirname
-    authors_data = `git log --pretty=format:%aE\\|%aN\\|%aD`.split("\n").uniq
-    authors_data.each do |data|
-        email, name, date = data.split("|")
-        file.puts "#{project},\"#{date}\",\"#{name}\""
-    end
-end
-
-file.close

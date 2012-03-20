@@ -94,8 +94,11 @@ class Organization < Mash
 
   def commits_per_year(year)
     total_commits = 0
-    members.each do |member|
+    members.each_with_index do |member,index|
       user = member.login
+      next if (repositories = Organization.user_repositories(user)).empty?
+      # This is a dirty hack to avoid get Github API satured
+      sleep 10 if index.modulo(4) == 0
       own_commits = 0
       org_commits = 0
       puts "\nUser: #{user}"

@@ -106,7 +106,7 @@ class Organization < Mash
           commit_year = Date.parse(commit.authored_date).strftime("%Y").to_i
           commit.id if commit_year == year
         }.compact.count
-        if repository.own == @name
+        if repository.owner == @name
           puts "\t#{@name}'s repo: #{repo}\tNum. Commits: #{num_commits}"
           org_commits += num_commits
         else

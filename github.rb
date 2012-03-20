@@ -99,8 +99,8 @@ class Organization < Mash
       own_commits = 0
       org_commits = 0
       puts "\nUser: #{user}"
-      Organization.user_repositories(user).each do |repository|
-        break if not repository
+      repositories.each do |repository|
+        next unless repository
         repo = repository.name
         num_commits = Organization.commits(user, repo).collect { |commit|
           commit_year = Date.parse(commit.authored_date).strftime("%Y").to_i
